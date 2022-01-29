@@ -1,0 +1,11 @@
+/*
+Query the Euclidean Distance between points  and  and format your answer to display  decimal digits.
+d(p1, p2)= sqrt( square(min(lat_n) - max(lat_n)) + square(min(long_w) - max(long_w)) )
+
+sqrt(float)
+square(float)
+
+*/
+
+select cast((sqrt(square(min(lat_n) - max(lat_n)) + square(min(long_w) - max(long_w)))) as decimal(20,4))
+  from station
