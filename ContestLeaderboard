@@ -1,0 +1,28 @@
+/*
+hacker_id
+name
+total score 
+order by total score desc
+
+if more than 1 hacker w same score, sort by hacker id asc
+exclude all hacker with total score = 0
+*/
+
+with max_score 
+as (
+    select s.challenge_id
+          ,s.hacker_id
+          ,max(score) as max_score
+      from submissions as s
+     group by s.challenge_id, s.hacker_id
+    )
+
+select h.hacker_id
+      ,h.name
+      ,sum(max_score) as totalscore
+  from hackers as h
+  join max_score as mc
+    on h.hacker_id = mc.hacker_id
+ group by h.hacker_id, h.name
+having sum(max_score) > 0
+ order by sum(max_score) desc, hacker_id asc
