@@ -1,0 +1,16 @@
+/*
+name
+grade
+mark
+
+those >= 8
+order by grade DESC, name, mark
+*/
+select CASE WHEN g.grade >= 8 THEN s.name
+            ELSE NULL
+        END as Name
+      ,g.grade
+      ,s.marks
+  from students as s 
+  join grades as g on s.marks between g.min_mark and g.max_mark
+ order by g.grade DESC, s.name, s.marks
