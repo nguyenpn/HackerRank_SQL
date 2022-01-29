@@ -1,0 +1,74 @@
+/*
+hacker_id
+name
+total number of challenge by ea student
+
+order by total num of challenge des, hacker_id
+
+If more than one student created the same number of challenges and the count is less than the maximum number of challenges created, then exclude those students from the result.
+*/
+
+--Method 1: 
+
+WITH cte_data AS
+(-- get totalcount for each hacker
+select c.hacker_id
+      ,h.name
+      ,count(challenge_id) as totalcount
+  from hackers as h
+  join challenges as c
+    on h.hacker_id = c.hacker_id
+ group by c.hacker_id, h.name
+)
+select distinct cte.hacker_id
+      ,cte.name
+      ,totalcount
+  from cte_data as cte
+  join challenges as c 
+    on c.hacker_id = cte.hacker_id
+ where cte.totalcount = (select max(totalcount) -- those with max total challenge count
+                           from cte_data)
+    or cte.totalcount in (select totalcount
+                             from cte_data
+                            group by totalcount
+                           having count(totalcount) = 1) -- those with unique score
+ order by totalcount desc, cte.hacker_id
+
+
+/*
+-- Method 2:
+select temp_t1.hacker_id
+      ,h.name
+      ,temp_t1.totalcount
+  from (
+          select c.hacker_id
+                ,count(challenge_id) as totalcount
+            from challenges as c
+            group by c.hacker_id
+  ) as temp_t1
+  join hackers as h
+    on h.hacker_id = temp_t1.hacker_id
+ where temp_t1.totalcount = (
+         select max(temp_t2.totalcount) 
+           from (
+                  select c.hacker_id
+                         ,count(challenge_id) as totalcount
+                    from challenges as c
+                    group by c.hacker_id
+           ) as temp_t2
+ )
+    or temp_t1.totalcount in (
+             select totalcount
+               from (
+                      select c.hacker_id
+                             ,count(challenge_id) as totalcount
+                        from challenges as c
+                        group by c.hacker_id
+               ) as temp_t4
+               group by totalcount
+              having count(totalcount) = 1
+    )
+ order by temp_t1.totalcount desc, temp_t1.hacker_id
+
+*/
+ 
