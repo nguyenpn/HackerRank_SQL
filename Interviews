@@ -1,0 +1,68 @@
+/*
+contest_id
+hacker_id
+name
+
+sum of total_submissions
+sum oftotal_accepted_submissions
+sum of total_views
+sum of total_unique_views for each contest
+
+order by contest_id
+
+exclude contest if all four sum = 0
+
+A specific contest can be used to screen candidates at more than one college, but each college only holds  screening contest.
+
+contests(contest_id, hacker_id, name)
+    name of the hacker
+challenges (challenge_id, college_id)
+    college_id where challenges was given to candidates
+view_stats (challenge_id, total_views, total_unique_views)
+    total views by candidates
+    total unique views by unique candidates
+submission_stats (challenge_id, total_submissions, total_accepted_sub1missions)
+*/
+
+
+WITH 
+cte_view AS ( -- get total view stats by each challenge id from view stat table
+    select challenge_id
+          ,sum(total_views) as total_views
+          ,sum(total_unique_views) as total_unique_views
+      from view_stats 
+     group by challenge_id
+),
+
+cte_submiss AS ( -- get total submissions by each challenge id from submission stat table
+    select challenge_id
+          ,sum(total_submissions) as total_submissions
+          ,sum(total_accepted_submissions) as total_accepted_submissions
+      from submission_stats
+     group by challenge_id
+)
+
+select c.contest_id
+      ,c.hacker_id
+      ,c.name
+      ,sum(total_submissions)
+      ,sum(total_accepted_submissions)
+      ,sum(total_views)
+      ,sum(total_unique_views)
+
+  from contests as c
+ inner join colleges as col 
+    on c.contest_id = col.contest_id
+ inner join challenges as chal
+    on col.college_id = chal.college_id
+  left join cte_view
+    on cte_view.challenge_id = chal.challenge_id
+  left join cte_submiss as sub   
+    on sub.challenge_id = chal.challenge_id
+ group by c.contest_id, c.hacker_id, c.name
+having (sum(total_views) 
+      + sum(total_unique_views) 
+      + sum(total_submissions) 
+      + sum(total_accepted_submissions)
+      ) <>0 
+ order by c.contest_id
